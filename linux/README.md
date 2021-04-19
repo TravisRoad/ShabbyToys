@@ -1,0 +1,5 @@
+## linux homework
+
+```shell
+make
+```
