@@ -6,20 +6,15 @@
 #include <time.h>
 #include <unistd.h>
 
-#define MAX_LENGTH 4096
 #define TIME_S_PER_DAY 86400
 #define MAXBUFSIZE 1024
-#define NUM_OPT 6
 
-int opt_a = 0, opt_r = 0, opt_g = 0;
-int opt_h = 0x3f3f3f3f;
+int opt_a = 0, opt_r = 0, opt_g = 0, pathc = 0;
+int opt_h = 0x3f3f3f3f, opt_m = 0x3f3f3f3f;
 int opt_l = -1;
-int opt_m = 0x3f3f3f3f;
 
-char opt[NUM_OPT] = {'a', 'r', 'm', 'l', 'h', '-'};
-int* p_opt[NUM_OPT] = {&opt_a, &opt_r, &opt_m, &opt_l, &opt_h, &opt_g};
+int* p_opt[6] = {&opt_a, &opt_r, &opt_m, &opt_l, &opt_h, &opt_g};
 
-// ret = stat(path, &st);
 void usage() {
   printf(
       "LIST 1.0 by Travis, lxy2018montage@bupt.edu.cn, %s %s \
@@ -33,6 +28,12 @@ void usage() {
         \n  -m <days> \tLimit file last modified time\n",
       __DATE__, __TIME__);
   exit(0);
+}
+
+void print(struct stat st, char* buf) {
+  time_t now = time(NULL);
+  if (st.st_size > opt_l && st.st_size < opt_h && (now - st.st_mtime) / TIME_S_PER_DAY < opt_m)
+    printf("%16ld  %s\n", st.st_size, buf);
 }
 
 void list(char* path, char* pre_path, char* filename) {
@@ -49,13 +50,13 @@ void list(char* path, char* pre_path, char* filename) {
       return;
     }
     while ((dirp = readdir(dp)) != NULL) {
-      char new_path[256] = {0}, buf[256] = {0};
-      strcat(new_path, path), strcat(new_path, "/");
-      strcat(buf, pre_path), strcat(buf, dirp->d_name);
+      char new_path[256], buf[256];
+      strcpy(new_path, path), strcat(new_path, "/");
+      strcpy(buf, pre_path), strcat(buf, dirp->d_name);  
       
       if (dirp->d_type == 4) {
         if ((opt_a && '.' == dirp->d_name[0]) || '.' != dirp->d_name[0])
-          printf("%16ld  %s\n", st.st_size, buf);
+          print(st,buf);
         if (opt_r && strcmp("..", dirp->d_name)!=0 && strcmp(".", dirp->d_name)!=0) {
           list(strcat(new_path, dirp->d_name), strcat(buf, "/"), dirp->d_name);
         }
@@ -64,16 +65,13 @@ void list(char* path, char* pre_path, char* filename) {
       }
     }
   } else {
-    char buf[256] = {0};
-    time_t now = time(NULL);
-    strcat(buf, pre_path);
-    if (st.st_size > opt_l && st.st_size < opt_h &&
-        (now - st.st_mtime) / TIME_S_PER_DAY < opt_m)
-      printf("%16ld  %s\n", st.st_size, strcat(buf, filename));
+    char buf[256];
+    strcpy(buf, pre_path);
+    print(st,strcat(buf, filename));
   }
 }
 
-void listfile_in_cwd(char* filename, int* num) {
+void listfile_in_cwd(char* filename) {
   char* cwd = getcwd(NULL, MAXBUFSIZE);
   strcat(cwd, "/");
   if (filename[0] == '/')
@@ -81,11 +79,10 @@ void listfile_in_cwd(char* filename, int* num) {
   else
     list(strcat(cwd, filename), "", filename);
   free(cwd);
-  *num += 1;
 }
 
-void parse_args(int argc, char* argv[]) {
-  int state = 0, num = 0, flag = 0;
+int parse_args(int argc, char* argv[], char* pathv[], int* pathc) {
+  int state = 0, flag = 0;
   for (int i = 1; i < argc; ++i) {
     switch (state) {
       case 0:
@@ -100,7 +97,7 @@ void parse_args(int argc, char* argv[]) {
             default:  usage(); break;
           }
         } else
-          listfile_in_cwd(argv[i], &num);
+          pathv[(*pathc)++] = argv[i];
         break;
       default:
         *p_opt[state] = atoi(argv[i]);
@@ -108,11 +105,15 @@ void parse_args(int argc, char* argv[]) {
         break;
     }
   }
-  if (0 != state) usage();
-  if (!num) listfile_in_cwd("", &num);
+  return state;
 }
 
 int main(int argc, char* argv[]) {
-  parse_args(argc, argv);
+  char* pathv[256];
+  if (0 != parse_args(argc, argv, pathv, &pathc)) usage();
+  if (pathc == 0)
+    listfile_in_cwd("");
+  else
+    for (int i = 0; i < pathc; ++i) listfile_in_cwd(pathv[i]);
   return 0;
 }
