@@ -11,14 +11,13 @@
 #define MAXBUFSIZE 1024
 #define NUM_OPT 6
 
-struct stat st;
 int opt_a = 0, opt_r = 0, opt_g = 0;
 int opt_h = 0x3f3f3f3f;
 int opt_l = -1;
 int opt_m = 0x3f3f3f3f;
 
 char opt[NUM_OPT] = {'a', 'r', 'm', 'l', 'h', '-'};
-int* popt[NUM_OPT] = {&opt_a, &opt_r, &opt_m, &opt_l, &opt_h, &opt_g};
+int* p_opt[NUM_OPT] = {&opt_a, &opt_r, &opt_m, &opt_l, &opt_h, &opt_g};
 
 // ret = stat(path, &st);
 void usage() {
@@ -86,45 +85,30 @@ void listfile_in_cwd(char* filename, int* num) {
 }
 
 void parse_args(int argc, char* argv[]) {
-  int state = 0, num = 0;
+  int state = 0, num = 0, flag = 0;
   for (int i = 1; i < argc; ++i) {
     switch (state) {
       case 0:
-        if (!strcmp(argv[i], "-r"))
-          opt_r = 1;
-        else if (!strcmp(argv[i], "-a"))
-          opt_a = 1;
-        else if (!strcmp(argv[i], "-m")) {
-          state = 2;
-        } else if (!strcmp(argv[i], "-l")) {
-          state = 3;
-        } else if (!strcmp(argv[i], "-h")) {
-          state = 4;
-        } else if (!strcmp(argv[i], "--")) {
-          state = 5;
-        } else if (!strcmp(argv[i], "-?")) {
-          usage();
-        } else {
+        if (argv[i][0] == '-' && flag==0) {
+          switch(argv[i][1]){
+            case 'r': opt_r = 1; break;
+            case 'a': opt_a = 1; break;
+            case 'm': state = 2; break;
+            case 'l': state = 3; break;
+            case 'h': state = 4; break;
+            case '-': flag = 1; break;
+            default:  usage(); break;
+          }
+        } else
           listfile_in_cwd(argv[i], &num);
-        }
-        break;
-      case 8:
-        listfile_in_cwd(argv[i], &num);
         break;
       default:
-        if (state > 1 && state < 5)
-          *popt[state] = atoi(argv[i]);
-        else if (state <= 1)
-          *popt[state] = 1;
-        else if (state == 5) {
-          state = 8;
-          break;
-        }
+        *p_opt[state] = atoi(argv[i]);
         state = 0;
         break;
     }
   }
-  if ((0 != state) && (8 != state)) usage();
+  if (0 != state) usage();
   if (!num) listfile_in_cwd("", &num);
 }
 
