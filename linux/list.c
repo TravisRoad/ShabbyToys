@@ -49,15 +49,15 @@ void list(char* path, char* pre_path, char* filename) {
       return;
     }
     while ((dirp = readdir(dp)) != NULL) {
-      if (!opt_a && '.' == dirp->d_name[0]) continue;
       char new_path[256] = {0}, buf[256] = {0};
       strcat(new_path, path), strcat(new_path, "/");
       strcat(buf, pre_path), strcat(buf, dirp->d_name);
+      
       if (dirp->d_type == 4) {
-        if (opt_r && strcmp("..", dirp->d_name) && strcmp(".", dirp->d_name)) {
-          list(strcat(new_path, dirp->d_name), strcat(buf, "/"), dirp->d_name);
-        } else if (opt_a && '.' == dirp->d_name[0]) {
+        if ((opt_a && '.' == dirp->d_name[0]) || '.' != dirp->d_name[0])
           printf("%16ld  %s\n", st.st_size, buf);
+        if (opt_r && strcmp("..", dirp->d_name)!=0 && strcmp(".", dirp->d_name)!=0) {
+          list(strcat(new_path, dirp->d_name), strcat(buf, "/"), dirp->d_name);
         }
       } else {
         list(strcat(new_path, dirp->d_name), pre_path, dirp->d_name);
