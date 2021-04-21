@@ -30,9 +30,11 @@ void usage() {
   exit(0);
 }
 
-void print(struct stat st, char* buf) {
+void print(struct stat st, char* buf, char* filename) {
   time_t now = time(NULL);
-  if (st.st_size > opt_l && st.st_size < opt_h && (now - st.st_mtime) / TIME_S_PER_DAY < opt_m)
+  if (st.st_size > opt_l && st.st_size < opt_h &&
+      (now - st.st_mtime) / TIME_S_PER_DAY < opt_m &&
+      ((opt_a && '.' == filename[0]) || '.' != filename[0]))
     printf("%16ld  %s\n", st.st_size, buf);
 }
 
@@ -55,8 +57,7 @@ void list(char* path, char* pre_path, char* filename) {
       strcpy(buf, pre_path), strcat(buf, dirp->d_name);  
       
       if (dirp->d_type == 4) {
-        if ((opt_a && '.' == dirp->d_name[0]) || '.' != dirp->d_name[0])
-          print(st,buf);
+        print(st,buf,dirp->d_name);
         if (opt_r && strcmp("..", dirp->d_name)!=0 && strcmp(".", dirp->d_name)!=0) {
           list(strcat(new_path, dirp->d_name), strcat(buf, "/"), dirp->d_name);
         }
@@ -67,7 +68,7 @@ void list(char* path, char* pre_path, char* filename) {
   } else {
     char buf[256];
     strcpy(buf, pre_path);
-    print(st,strcat(buf, filename));
+    print(st,strcat(buf, filename),filename);
   }
 }
 
