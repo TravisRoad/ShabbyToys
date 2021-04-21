@@ -12,3 +12,7 @@ test:
 	./list -a -r -l 50000 -m 2
 	./list -- -l
 	./list *
+
+.PHONY:deploy
+deploy:
+	sudo cp ./list /usr/bin
