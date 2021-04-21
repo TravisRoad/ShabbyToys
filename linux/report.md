@@ -58,10 +58,12 @@ deploy:
 	sudo cp ./list /usr/bin
 ```
 
+<img src="../../../AppData/Roaming/Typora/typora-user-images/image-20210421203201400.png" alt="image-20210421203201400" style="zoom:50%;" />
+
 ## 源代码
+
 ``` C
 /**
- * @file list.c
  * @author Travis
  */
 #include <dirent.h>
@@ -74,6 +76,8 @@ deploy:
 
 #define TIME_S_PER_DAY 86400
 #define MAXBUFSIZE 1024
+#define file_color "\033[32;1m" // 绿色
+#define dir_color "\033[34;42;1m" //绿色底色
 
 int opt_a = 0, opt_r = 0, opt_g = 0, pathc = 0;
 int opt_h = 0x3f3f3f3f, opt_m = 0x3f3f3f3f;
@@ -96,12 +100,12 @@ void usage() {
   exit(0);
 }
 
-void print(struct stat st, char* buf, char* filename) {
+void print(struct stat st, char* buf, char* filename, int is_dir) {
   time_t now = time(NULL);
   if (st.st_size > opt_l && st.st_size < opt_h &&
       (now - st.st_mtime) / TIME_S_PER_DAY < opt_m &&
       ((opt_a && '.' == filename[0]) || '.' != filename[0]))
-    printf("%16ld  %s\n", st.st_size, buf);
+    printf("%16ld  %s%s\033[0m%c\n", st.st_size,is_dir?dir_color:file_color, buf, is_dir?'/':'*');
 }
 
 void list(char* path, char* pre_path, char* filename) {
@@ -118,12 +122,13 @@ void list(char* path, char* pre_path, char* filename) {
       return;
     }
     while ((dirp = readdir(dp)) != NULL) {
+      if(!opt_a && dirp->d_name[0] == '.') continue;
       char new_path[256], buf[256];
       strcpy(new_path, path), strcat(new_path, "/");
       strcpy(buf, pre_path), strcat(buf, dirp->d_name);  
       
       if (dirp->d_type == 4) {
-        print(st,buf,dirp->d_name);
+        print(st,buf,dirp->d_name,1);
         if (opt_r && strcmp("..", dirp->d_name)!=0 && strcmp(".", dirp->d_name)!=0) {
           list(strcat(new_path, dirp->d_name), strcat(buf, "/"), dirp->d_name);
         }
@@ -134,7 +139,7 @@ void list(char* path, char* pre_path, char* filename) {
   } else {
     char buf[256];
     strcpy(buf, pre_path);
-    print(st,strcat(buf, filename),filename);
+    print(st,strcat(buf, filename),filename,0);
   }
 }
 
@@ -184,7 +189,6 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < pathc; ++i) listfile_in_cwd(pathv[i]);
   return 0;
 }
-
 ```
 
 ## 代码说明
@@ -195,8 +199,35 @@ int main(int argc, char* argv[]) {
 
 ### 参数解析
 
+`int parse_args(int argc, char* argv[], char* pathv[], int* pathc)`
 
+解析参数，将选项结果置于全局变量`opt_a`,`opt_r`等变量当中，并把路径置于`pathv`中，用`pathc`记录path的数量。
+
+参数解析部分由一个简单的自动机实现。
 
 ### 打印对应目录
 
+若发现参数中路径参数为零，则打印当前目录；否则将路径全部打印出。
+
+具体实现部分在函数`void list(char* path, char* pre_path, char* filename)`
+
+```mermaid
+graph LR
+A((start)) --> list
+list --> B{判断是否是目录}
+
+B --Y --> Y[print所有文件]
+B --N--> N[print文件信息]
+
+print --> isr{各个选项是否开启}
+isr --> 根据选项决定是否输出
+
+```
+
+
+
 ## 小结
+
+- 通过这次编码，对`vim`的命令更加熟悉了，如果能熟练运用，想来能获得更加心流的体验；
+- 在编码过程中，发现自己的编码能力确实不足，这次的源代码已经是修改了几版之后的结果；
+- 最后使用了`vscode`连接`linux`环境，使用格式化工具格式化了代码，并运用图形化的debug工具进行了调试。

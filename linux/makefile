@@ -8,10 +8,10 @@ clean:
 
 .PHONY:test
 test:
-	./list -l 100 -h 5000 /bin /etc
-	./list -a -r -l 50000 -m 2
-	./list -- -l
-	./list *
+	./list -l 100 -h 5000 /bin /etc | head -n 30
+	./list -a -r -l 50000 -m 2 | head
+	./list -- -l | head
+	./list * | head
 
 .PHONY:deploy
 deploy:
