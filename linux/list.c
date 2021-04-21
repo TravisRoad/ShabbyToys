@@ -8,6 +8,8 @@
 
 #define TIME_S_PER_DAY 86400
 #define MAXBUFSIZE 1024
+#define file_color "\033[32;1m" // 绿色
+#define dir_color "\033[34;42;1m" //绿色底色
 
 int opt_a = 0, opt_r = 0, opt_g = 0, pathc = 0;
 int opt_h = 0x3f3f3f3f, opt_m = 0x3f3f3f3f;
@@ -30,12 +32,12 @@ void usage() {
   exit(0);
 }
 
-void print(struct stat st, char* buf, char* filename) {
+void print(struct stat st, char* buf, char* filename, int is_dir) {
   time_t now = time(NULL);
   if (st.st_size > opt_l && st.st_size < opt_h &&
       (now - st.st_mtime) / TIME_S_PER_DAY < opt_m &&
       ((opt_a && '.' == filename[0]) || '.' != filename[0]))
-    printf("%16ld  %s\n", st.st_size, buf);
+    printf("%16ld  %s%s\033[0m%c\n", st.st_size,is_dir?dir_color:file_color, buf, is_dir?'/':'*');
 }
 
 void list(char* path, char* pre_path, char* filename) {
@@ -52,12 +54,13 @@ void list(char* path, char* pre_path, char* filename) {
       return;
     }
     while ((dirp = readdir(dp)) != NULL) {
+      if(!opt_a && dirp->d_name[0] == '.') continue;
       char new_path[256], buf[256];
       strcpy(new_path, path), strcat(new_path, "/");
       strcpy(buf, pre_path), strcat(buf, dirp->d_name);  
       
       if (dirp->d_type == 4) {
-        print(st,buf,dirp->d_name);
+        print(st,buf,dirp->d_name,1);
         if (opt_r && strcmp("..", dirp->d_name)!=0 && strcmp(".", dirp->d_name)!=0) {
           list(strcat(new_path, dirp->d_name), strcat(buf, "/"), dirp->d_name);
         }
@@ -68,7 +71,7 @@ void list(char* path, char* pre_path, char* filename) {
   } else {
     char buf[256];
     strcpy(buf, pre_path);
-    print(st,strcat(buf, filename),filename);
+    print(st,strcat(buf, filename),filename,0);
   }
 }
 
