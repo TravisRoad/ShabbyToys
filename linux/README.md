@@ -1,5 +1,2 @@
 ## linux homework
 
-```shell
-make
-```

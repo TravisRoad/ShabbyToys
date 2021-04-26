@@ -54,3 +54,8 @@ dkms.conf
 # cust
 *.lnk
 .vscode
+*.pdf
+~*.*
+*.~*.*
+
+/test
