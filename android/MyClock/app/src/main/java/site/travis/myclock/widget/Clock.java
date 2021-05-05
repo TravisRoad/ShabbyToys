@@ -30,7 +30,7 @@ public class Clock extends View {
 	private static final int DEFAULT_PRIMARY_COLOR = Color.WHITE;
 	private static final int DEFAULT_SECONDARY_COLOR = Color.LTGRAY;
 
-	private static final float DEFAULT_DEGREE_STROKE_WIDTH = 0.010f;
+	private static final float DEFAULT_DEGREE_STROKE_WIDTH = 0.015f;
 
 	public final static int AM = 0;
 
@@ -103,7 +103,6 @@ public class Clock extends View {
 		mDegreePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		mDegreePaint.setStyle(Paint.Style.FILL_AND_STROKE);
 		mDegreePaint.setStrokeCap(Paint.Cap.ROUND);
-		mDegreePaint.setStrokeWidth(mWidth * DEFAULT_DEGREE_STROKE_WIDTH);
 		mDegreePaint.setColor(degreesColor);
 
 		update();
@@ -116,7 +115,7 @@ public class Clock extends View {
 			public void run() {
 				postInvalidate(); // 重新绘制
 			}
-		}, 500, 50);
+		}, 50, 50);
 	}
 
 	@Override
@@ -140,6 +139,8 @@ public class Clock extends View {
 	}
 
 	private void drawDegrees(Canvas canvas) {
+
+		mDegreePaint.setStrokeWidth(mWidth * DEFAULT_DEGREE_STROKE_WIDTH);
 
 		int rPadded = mCenterX - (int) (mWidth * 0.01f);
 		int rEnd = mCenterX - (int) (mWidth * 0.05f);
@@ -169,8 +170,6 @@ public class Clock extends View {
 	 * @param canvas
 	 */
 	private void drawHoursValues(Canvas canvas) {
-		// Default Color:
-		// - hoursValuesColor
 		mNumberPaint.setColor(Color.WHITE);
 		mNumberPaint.setTextSize(40);
 		int rPadded = mCenterX - (int) (mWidth * 0.10f);
@@ -213,15 +212,14 @@ public class Clock extends View {
 		drawPointer(canvas, 2, nowSeconds);
 		// 画分针
 		// todo 画分针
-		drawPointer(canvas, 1, nowMinutes);
+		drawPointer(canvas, 1, nowMinutes + (float)nowSeconds/60);
 		// 画时针
-		int part = nowMinutes / 12;
+		float part = (float)nowMinutes / 12;
 		drawPointer(canvas, 0, 5 * nowHours + part);
-
 	}
 
 
-	private void drawPointer(Canvas canvas, int pointerType, int value) {
+	private void drawPointer(Canvas canvas, int pointerType, float value) {
 
 		float degree;
 		float[] pointerHeadXY = new float[2];
@@ -255,18 +253,5 @@ public class Clock extends View {
 		xy[1] = (float) (mCenterY - pointerLength * Math.cos(degree));
 		return xy;
 	}
-
-/*	public enum Pointer {
-		SECOND_PONINTER(2),
-		MINUTE_PONINTER(1),
-		HOUR_PONINTER(0);
-
-		private Pointer(int val) {
-			this.val = val;
-		}
-
-		final int val;
-	}*/
-
 
 }

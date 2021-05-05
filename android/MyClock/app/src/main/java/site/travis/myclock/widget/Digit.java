@@ -80,7 +80,7 @@ public class Digit extends View {
 			public void run() {
 				postInvalidate(); // 重新绘制
 			}
-		}, 500, 50);
+		}, 50, 50);
 	}
 
 	@Override
@@ -101,6 +101,7 @@ public class Digit extends View {
 		@SuppressLint("SimpleDateFormat") DateFormat df = new SimpleDateFormat("HH:mm:ss");
 		df.setTimeZone(TimeZone.getTimeZone("GMT+8"));
 		String s = df.format(new Date());
+
 		Rect rect = new Rect(); //获取数字的宽度和高度
 		mDigitPaint.getTextBounds(s, 0, s.length(), rect);
 		int textWidth = rect.width();

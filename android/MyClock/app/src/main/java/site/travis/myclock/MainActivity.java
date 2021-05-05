@@ -36,7 +36,6 @@ public class MainActivity extends AppCompatActivity {
 		});
 		mRootView = findViewById(R.id.root);
 		mClockView = findViewById(R.id.clock);
-
 	}
 }
 
