@@ -4,15 +4,13 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.os.Build;
+import android.graphics.Rect;
 import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
-import java.time.Instant;
-import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -49,7 +47,11 @@ public class Clock extends View {
 
 	private int degreesColor;
 
+	private Context mContext;
+
 	private Paint mNeedlePaint;
+	private Paint mNumberPaint;
+	private Paint mDegreePaint;
 
 	public Clock(Context context) {
 		super(context);
@@ -87,12 +89,22 @@ public class Clock extends View {
 
 	private void init(Context context, AttributeSet attrs) {
 
+		mContext = context;
 		this.degreesColor = DEFAULT_PRIMARY_COLOR;
 
 		mNeedlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		mNeedlePaint.setStyle(Paint.Style.FILL_AND_STROKE);
 		mNeedlePaint.setStrokeCap(Paint.Cap.ROUND);
-		mNeedlePaint.setAntiAlias(true);
+
+		mNumberPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+		mNumberPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+		mNumberPaint.setStrokeCap(Paint.Cap.ROUND);
+
+		mDegreePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+		mDegreePaint.setStyle(Paint.Style.FILL_AND_STROKE);
+		mDegreePaint.setStrokeCap(Paint.Cap.ROUND);
+		mDegreePaint.setStrokeWidth(mWidth * DEFAULT_DEGREE_STROKE_WIDTH);
+		mDegreePaint.setColor(degreesColor);
 
 		update();
 	}
@@ -125,18 +137,9 @@ public class Clock extends View {
 		drawDegrees(canvas);
 		drawHoursValues(canvas);
 		drawNeedles(canvas);
-
-		// todo 每一秒刷新一次，让指针动起来
-
 	}
 
 	private void drawDegrees(Canvas canvas) {
-
-		Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-		paint.setStyle(Paint.Style.FILL_AND_STROKE);
-		paint.setStrokeCap(Paint.Cap.ROUND);
-		paint.setStrokeWidth(mWidth * DEFAULT_DEGREE_STROKE_WIDTH);
-		paint.setColor(degreesColor);
 
 		int rPadded = mCenterX - (int) (mWidth * 0.01f);
 		int rEnd = mCenterX - (int) (mWidth * 0.05f);
@@ -144,9 +147,9 @@ public class Clock extends View {
 		for (int i = 0; i < FULL_ANGLE; i += 6 /* Step */) {
 
 			if ((i % RIGHT_ANGLE) != 0 && (i % 15) != 0)
-				paint.setAlpha(CUSTOM_ALPHA);
+				mDegreePaint.setAlpha(CUSTOM_ALPHA);
 			else {
-				paint.setAlpha(FULL_ALPHA);
+				mDegreePaint.setAlpha(FULL_ALPHA);
 			}
 
 			int startX = (int) (mCenterX + rPadded * Math.cos(Math.toRadians(i)));
@@ -155,7 +158,7 @@ public class Clock extends View {
 			int stopX = (int) (mCenterX + rEnd * Math.cos(Math.toRadians(i)));
 			int stopY = (int) (mCenterX - rEnd * Math.sin(Math.toRadians(i)));
 
-			canvas.drawLine(startX, startY, stopX, stopY, paint);
+			canvas.drawLine(startX, startY, stopX, stopY, mDegreePaint);
 
 		}
 	}
@@ -168,8 +171,24 @@ public class Clock extends View {
 	private void drawHoursValues(Canvas canvas) {
 		// Default Color:
 		// - hoursValuesColor
-
-
+		mNumberPaint.setColor(Color.WHITE);
+		mNumberPaint.setTextSize(40);
+		int rPadded = mCenterX - (int) (mWidth * 0.10f);
+		for (int i = 0; i < 12; ++i) {
+			int degree = 30 * -i + 60; //计算每个数字所在位置的角度
+			double radians = Math.toRadians(degree); //将角度转换为弧度，以便计算正弦值和余弦值
+			mNumberPaint.setStrokeWidth(4);
+			String hourText;
+			hourText = String.valueOf(i + 1);
+			Rect rect = new Rect(); //获取数字的宽度和高度
+			mNumberPaint.getTextBounds(hourText, 0, hourText.length(), rect);
+			int textWidth = rect.width();
+			int textHeight = rect.height();
+			canvas.drawText(hourText,
+							(float) (mCenterX + rPadded * Math.cos(radians) - textWidth / 2),
+							(float) (mCenterX - rPadded * Math.sin(radians) + textHeight / 2),
+							mNumberPaint); //通过计算出来的坐标进行数字的绘制
+		}
 	}
 
 	/**
@@ -178,14 +197,18 @@ public class Clock extends View {
 	 *
 	 * @param canvas
 	 */
-	@RequiresApi(api = Build.VERSION_CODES.O)
 	private void drawNeedles(final Canvas canvas) {
 		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"), Locale.CHINESE);
-		Date now = calendar.getTime();
-		Log.d("date",now.toString());
+		//  Log.d("date", now.toString());
+		/*Date now = calendar.getTime();
 		int nowHours = now.getHours();
 		int nowMinutes = now.getMinutes();
-		int nowSeconds = now.getSeconds();
+		int nowSeconds = now.getSeconds();*/
+
+		int nowHours = calendar.get(Calendar.HOUR);
+		int nowMinutes = calendar.get(Calendar.MINUTE);
+		int nowSeconds = calendar.get(Calendar.SECOND);
+
 		// 画秒针
 		drawPointer(canvas, 2, nowSeconds);
 		// 画分针
