@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.View;
@@ -17,8 +18,10 @@ import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
 
+
 public class Digit extends View {
 
+	private final Handler handler = new Handler();
 	private Paint mDigitPaint;
 
 	private int mWidth, mCenterX, mCenterY, mRadius;
@@ -70,7 +73,7 @@ public class Digit extends View {
 		mDigitPaint.setColor(Color.WHITE);
 		mDigitPaint.setTextSize(100);
 
-		update();
+		// update();
 	}
 
 	private void update() {
@@ -95,6 +98,13 @@ public class Digit extends View {
 		mRadius = halfWidth;
 
 		drawDigit(canvas);
+
+		handler.postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				postInvalidate();
+			}
+		}, 50);
 	}
 
 	private void drawDigit(Canvas canvas) {

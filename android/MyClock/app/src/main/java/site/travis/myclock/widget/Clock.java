@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -52,6 +53,8 @@ public class Clock extends View {
 	private Paint mNeedlePaint;
 	private Paint mNumberPaint;
 	private Paint mDegreePaint;
+
+	private final Handler handler = new Handler();
 
 	public Clock(Context context) {
 		super(context);
@@ -105,7 +108,7 @@ public class Clock extends View {
 		mDegreePaint.setStrokeCap(Paint.Cap.ROUND);
 		mDegreePaint.setColor(degreesColor);
 
-		update();
+//		update();
 	}
 
 	private void update() {
@@ -136,6 +139,13 @@ public class Clock extends View {
 		drawDegrees(canvas);
 		drawHoursValues(canvas);
 		drawNeedles(canvas);
+
+		handler.postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				postInvalidate();
+			}
+		}, 50);
 	}
 
 	private void drawDegrees(Canvas canvas) {
