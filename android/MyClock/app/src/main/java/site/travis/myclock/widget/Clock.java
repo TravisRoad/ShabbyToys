@@ -140,12 +140,7 @@ public class Clock extends View {
 		drawHoursValues(canvas);
 		drawNeedles(canvas);
 
-		handler.postDelayed(new Runnable() {
-			@Override
-			public void run() {
-				postInvalidate();
-			}
-		}, 50);
+		handler.postDelayed(() -> postInvalidate(), 50);
 	}
 
 	private void drawDegrees(Canvas canvas) {
