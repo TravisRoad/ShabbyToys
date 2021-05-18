@@ -18,11 +18,9 @@ spider()
     cat $filename | sed -e 's/\(<[^<>]*>\)/\1\n/g' -e 's/\(<div class="description">\)\n/\1/g' \
                         -e 's/\(<div class="description"><h3>\)\n/\1/g' \
                         -e 's/<div class="description"><h3>\([^()<>]*\)([^()]*)<\/h3>/description \1/g' \
-                        -e 's/<p class="calendar">\n<i class="icon icon-calendar">\n<\/i>\n<em class="t">\n\([^<>]*\)<\/em>\n/timestamp \1\n/g'> $filename
-    cat $filename | sed -e 's/<a class="ctrl download" href="\([^<>"]*\)" [^<>]*>/download_url https:\/\/bing.ioliu.cn\1\n/g' > $filename
-    set -x
-    lz=$(cat $filename | egrep "(description)|(download_url)|(timestamp)" | sed -e 's/\(download_url\) \([^)]*\)/\1=\2\ndownload/g' -e 's/\(description\) \(.*\) $/\1="\2"/g' -e 's/\(timestamp\) /\1=/g')
-    # lz=$(cat $filename | egrep "(description)|(JouxFog_ZH-CN9947036409)" | sed -e 's/\(download_url\) \([^)]*\)/\1=\2\ndownload/g' -e 's/\(description\) \(.*\)/\1=\2/g')
+                        -e 's/<p class="calendar">\n<i class="icon icon-calendar">\n<\/i>\n<em class="t">\n\([^<>]*\)<\/em>\n/timestamp \1\n/g' \
+                        -e 's/<a class="ctrl download" href="\([^<>"]*\)" [^<>]*>/download_url https:\/\/bing.ioliu.cn\1\n/g' > /tmp/bingtmp.out
+    lz=$(cat /tmp/bingtmp.out | egrep "(description)|(download_url)|(timestamp)" | sed -e 's/\(download_url\) \([^)]*\)/\1=\2\ndownload/g' -e 's/\(description\) \(.*\) $/\1="\2"/g' -e 's/\(timestamp\) /\1=/g')
     echo $lz > out
     IFS=$'\n'
     for i in $lz
