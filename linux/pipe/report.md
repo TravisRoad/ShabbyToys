@@ -3,8 +3,8 @@
 
 ## 内容
 
-使用fork(), exec(), dup2(), pipe() ，open()，wait()等系统调用编写C语言程序完成与下列shell命令等价的功能。
-grep -v usr < /etc/passwd | wc -l > r.txt; cat r.txt 
+使用 fork(), exec(), dup2(), pipe(), open(), wait() 等系统调用编写C语言程序完成与下列shell命令等价的功能。
+`grep -v usr < /etc/passwd | wc -l > r.txt; cat r.txt `
 > （提示：为简化编程，不需要用strtok断词，直接用execlp实现能达到shell命令相同功能的程序即可）
 > 例如：execlp("grep", "grep", "-v", "usr", 0);
 

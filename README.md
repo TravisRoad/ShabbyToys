@@ -21,3 +21,7 @@ shabby code in shabby toys repo
 | list_self_imp | ls命令的实现，写的很丑                         |
 | pipe          | 课堂作业，管道以及重定向的实现                 |
 
+## other
+|   项目 |                 地址                 | 简介                                                                           |
+| -----: | :----------------------------------: | :----------------------------------------------------------------------------- |
+| Chwazi | https://github.com/TravisRoad/Chwazi | 一个简单的Chwazi in flutter应用，当做flutter练手项目，写的非常乱，有机会再重构 |
